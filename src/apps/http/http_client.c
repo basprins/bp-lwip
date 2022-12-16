@@ -129,11 +129,11 @@
 #define HTTPC_POST_REQ_11 "POST %s HTTP/1.1\r\n" /* URI */\
     "User-Agent: %s\r\n" /* User-Agent */ \
     "Accept: */*\r\n" \
-    "Connection: Close\r\n" /* we don't support persistent connections, yet */ \
+    "Connection: keep-alive\r\n" \
     "Content-Type: application/%s\r\n" \
     "Content-Length: %d\r\n" \
     "\r\n" \
-    "%s\r\n" \
+    "%s" \
     "\r\n"
 
 #define HTTPC_POST_REQ_11_FORMAT(uri, application_type, length, data) HTTPC_POST_REQ_11, uri, HTTPC_CLIENT_AGENT, application_type, length, data
@@ -143,11 +143,11 @@
     "User-Agent: %s\r\n" /* User-Agent */ \
     "Accept: */*\r\n" \
     "Host: %s\r\n" /* server name */ \
-    "Connection: Close\r\n" /* we don't support persistent connections, yet */ \
+    "Connection: keep-alive\r\n" \
     "Content-Type: application/%s\r\n" \
     "Content-Length: %d\r\n" \
     "\r\n" \
-    "%s\r\n" \
+    "%s" \
     "\r\n"
 
 #define HTTPC_POST_REQ_11_HOST_FORMAT(uri, srv_name, application_type, length, data) HTTPC_POST_REQ_11_HOST, uri, HTTPC_CLIENT_AGENT, srv_name, application_type, length, data
@@ -157,11 +157,11 @@
     "User-Agent: %s\r\n" /* User-Agent */ \
     "Accept: */*\r\n" \
     "Host: %s\r\n" /* server name */ \
-    "Connection: Close\r\n" /* we don't support persistent connections, yet */ \
+    "Connection: keep-alive\r\n" \
     "Content-Type: application/%s\r\n" \
     "Content-Length: %d\r\n" \
     "\r\n" \
-    "%s\r\n" \
+    "%s" \
     "\r\n"
 
 #define HTTPC_POST_REQ_11_PROXY_FORMAT(host, uri, srv_name, application_type, length, data) HTTPC_POST_REQ_11_PROXY, host, uri, HTTPC_CLIENT_AGENT, srv_name, application_type, length, data
@@ -171,11 +171,11 @@
     "User-Agent: %s\r\n" /* User-Agent */ \
     "Accept: */*\r\n" \
     "Host: %s\r\n" /* server name */ \
-    "Connection: Close\r\n" /* we don't support persistent connections, yet */ \
+    "Connection: keep-alive\r\n" \
     "Content-Type: application/%s\r\n" \
     "Content-Length: %d\r\n" \
     "\r\n" \
-    "%s\r\n" \
+    "%s" \
     "\r\n"
 
 #define HTTPC_POST_REQ_11_PROXY_PORT_FORMAT(host, host_port, uri, srv_name, application_type, length, data) HTTPC_POST_REQ_11_PROXY_PORT, host, host_port, uri, HTTPC_CLIENT_AGENT, srv_name, application_type, length, data
@@ -407,6 +407,7 @@ httpc_tcp_recv(void *arg, struct altcp_pcb *pcb, struct pbuf *p, err_t r)
   }
   if ((p != NULL) && (req->parse_state == HTTPC_PARSE_RX_DATA)) {
     req->rx_content_len += p->tot_len;
+    req->timeout_ticks = HTTPC_POLL_TIMEOUT;
     if (req->recv_fn != NULL) {
       /* directly return here: the connection migth already be aborted from the callback! */
       return req->recv_fn(req->callback_arg, pcb, p, r);
